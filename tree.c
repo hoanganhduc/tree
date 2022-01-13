@@ -30,7 +30,7 @@ bool dflag, lflag, pflag, sflag, Fflag, aflag, fflag, uflag, gflag;
 bool qflag, Nflag, Qflag, Dflag, inodeflag, devflag, hflag, Rflag;
 bool Hflag, siflag, cflag, Xflag, Jflag, duflag, pruneflag, shflag, cftflag;
 bool noindent, force_color, nocolor, xdev, noreport, nolinks, flimit;
-bool ignorecase, matchdirs, fromfile, metafirst, gitignore, showinfo, sideinfo, tooltipsinfo;
+bool ignorecase, matchdirs, fromfile, metafirst, gitignore, showinfo, html_sideinfo, html_tooltipsinfo;
 bool reverse;
 
 struct listingcalls lc;
@@ -105,7 +105,7 @@ int main(int argc, char **argv)
   noindent = force_color = nocolor = xdev = noreport = nolinks = reverse = FALSE;
   ignorecase = matchdirs = inodeflag = devflag = Xflag = Jflag = FALSE;
   duflag = pruneflag = metafirst = gitignore = FALSE;
-  sideinfo = tooltipsinfo = FALSE;
+  html_sideinfo = html_tooltipsinfo = FALSE;
 
   flimit = 0;
   dirs = xmalloc(sizeof(int) * (maxdirs=PATH_MAX));
@@ -517,14 +517,14 @@ int main(int argc, char **argv)
 	      showinfo=TRUE;
 	      break;
 	    }
-	    if (showinfo && !strcmp("--print-info-side",argv[i])) {
+	    if (showinfo && !strcmp("--html-info-side",argv[i])) {
 	      j = strlen(argv[i])-1;
-	      sideinfo=TRUE;
+	      html_sideinfo=TRUE;
 	      break;
 	    }
-	    if (showinfo && !strcmp("--print-info-tooltips",argv[i])) {
+	    if (showinfo && !strcmp("--html-info-tooltips",argv[i])) {
 	      j = strlen(argv[i])-1;
-	      tooltipsinfo=TRUE;
+	      html_tooltipsinfo=TRUE;
 	      break;
 	    } 	    
 	    fprintf(stderr,"tree: Invalid argument `%s'.\n",argv[i]);
@@ -614,7 +614,7 @@ void usage(int n)
 	"\t[--matchdirs] [--metafirst] [--ignore-case] [--nolinks] [--inodes]\n"
 	"\t[--device] [--sort[=]<name>] [--dirsfirst] [--filesfirst]\n"
 	"\t[--filelimit #] [--si] [--du] [--prune] [--charset X]\n"
-	"\t[--timefmt[=]format] [--fromfile] [--noreport] [--simple-html] [----footer M] [--version] [--help]\n"
+	"\t[--timefmt[=]format] [--fromfile] [--noreport] [--simple-html] [--footer M] [--version] [--help]\n"
 	"\t[--] [directory ...]\n");
 
   if (n < 2) return;
@@ -673,10 +673,10 @@ void usage(int n)
 	"  -J            Prints out an JSON representation of the tree.\n"
 	"  -H baseHREF   Prints out HTML format with baseHREF as top directory.\n"
 	"  -T string     Replace the default HTML title and H1 header with string.\n"
-	"  --print-info-side    \n"
+	"  --html-info-side    \n"
 	"                Prints out information about a file right next to it in HTML output.\n"
-	"  --print-info-tooltips    \n"
-	"                Prints out information about a file as mouse over tooltips in HTML output."
+	"  --html-info-tooltips    \n"
+	"                Prints out information about a file as mouse over tooltips in HTML output.\n"
 	"  --simple-html Prints only HTML body.\n"
 	"  --footer M    Prints out the message M before the copyright information in HTML output.\n"
 	"  --nolinks     Turn off hyperlinks in HTML output.\n"

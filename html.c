@@ -32,7 +32,7 @@ extern bool colorize, linktargetcolor;
 extern char *endcode;
 extern const struct linedraw *linedraw;
 
-extern bool sideinfo, tooltipsinfo;
+extern bool html_sideinfo, html_tooltipsinfo;
 
 char *class(struct _info *info)
 {
@@ -181,7 +181,7 @@ int html_printfile(char *dirname, char *filename, struct _info *file, int descen
   fprintf(outfile,"<a");
   if (file) {
     if (force_color) fprintf(outfile," class=\"%s\"", class(file));
-    if (file->comment && tooltipsinfo) {
+    if (file->comment && html_tooltipsinfo) {
       fprintf(outfile," title=\"");
       for(int i=0; file->comment[i]; i++) {
 	html_encode(outfile, file->comment[i]);
@@ -205,7 +205,7 @@ int html_printfile(char *dirname, char *filename, struct _info *file, int descen
 
   fprintf(outfile,"</a>");
   
-  if (file->comment && sideinfo) {
+  if (file->comment && html_sideinfo) {
     for(int i=0; file->comment[i]; i++) {
       fprintf(outfile, "&nbsp;&nbsp;<span style=\"font-family: monospace;\">");
 	  html_encode(outfile, file->comment[i]);
