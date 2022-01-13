@@ -28,9 +28,9 @@ char *hversion="\t\t tree v2.0.1 %s 1996 - 2022 by Steve Baker and Thomas Moore 
 /* Globals */
 bool dflag, lflag, pflag, sflag, Fflag, aflag, fflag, uflag, gflag;
 bool qflag, Nflag, Qflag, Dflag, inodeflag, devflag, hflag, Rflag;
-bool Hflag, siflag, cflag, Xflag, Jflag, duflag, pruneflag;
+bool Hflag, siflag, cflag, Xflag, Jflag, duflag, pruneflag, shflag, cftflag;
 bool noindent, force_color, nocolor, xdev, noreport, nolinks, flimit;
-bool ignorecase, matchdirs, fromfile, metafirst, gitignore, showinfo;
+bool ignorecase, matchdirs, fromfile, metafirst, gitignore, showinfo, sideinfo, tooltipsinfo;
 bool reverse;
 
 struct listingcalls lc;
@@ -42,6 +42,7 @@ char *host = NULL, *title = "Directory Tree", *sp = " ", *_nl = "\n";
 char *file_comment = "#", *file_pathsep = "/";
 char *timefmt = NULL;
 const char *charset = NULL;
+char *custom_footer = NULL;
 
 struct _info **(*getfulltree)(char *d, u_long lev, dev_t dev, off_t *size, char **err) = unix_getfulltree;
 //off_t (*listdir)(char *, int *, int *, u_long, dev_t) = unix_listdir;
@@ -100,10 +101,11 @@ int main(int argc, char **argv)
   bool needfulltree;
 
   aflag = dflag = fflag = lflag = pflag = sflag = Fflag = uflag = gflag = FALSE;
-  Dflag = qflag = Nflag = Qflag = Rflag = hflag = Hflag = siflag = cflag = FALSE;
+  Dflag = qflag = Nflag = Qflag = Rflag = hflag = Hflag = siflag = cflag = shflag = cftflag = FALSE;
   noindent = force_color = nocolor = xdev = noreport = nolinks = reverse = FALSE;
   ignorecase = matchdirs = inodeflag = devflag = Xflag = Jflag = FALSE;
   duflag = pruneflag = metafirst = gitignore = FALSE;
+  sideinfo = tooltipsinfo = FALSE;
 
   flimit = 0;
   dirs = xmalloc(sizeof(int) * (maxdirs=PATH_MAX));
@@ -355,6 +357,22 @@ int main(int argc, char **argv)
 	      topsort = filesfirst;
 	      break;
 	    }
+	    if (!strcmp("--simple-html",argv[i])) {
+	      j = strlen(argv[i])-1;
+	      shflag = TRUE;
+	      break;
+	    }
+	    if (!strcmp("--footer",argv[i])) {
+	      j = strlen(argv[i])-1;
+	      cftflag = TRUE;
+	      if (argv[n] == NULL) {
+	        fprintf(stderr,"tree: missing argument to --footer option.\n");
+	        exit(1);
+	  	  } else {
+	  	  	custom_footer = argv[n++];
+	  	  }
+	      break;
+	    }
 	    if (!strncmp("--filelimit",argv[i],11)) {
 	      j = 11;
 	      if (*(argv[i]+11) == '=') {
@@ -498,7 +516,17 @@ int main(int argc, char **argv)
 	      j = strlen(argv[i])-1;
 	      showinfo=TRUE;
 	      break;
-	    }	    
+	    }
+	    if (showinfo && !strcmp("--print-info-side",argv[i])) {
+	      j = strlen(argv[i])-1;
+	      sideinfo=TRUE;
+	      break;
+	    }
+	    if (showinfo && !strcmp("--print-info-tooltips",argv[i])) {
+	      j = strlen(argv[i])-1;
+	      tooltipsinfo=TRUE;
+	      break;
+	    } 	    
 	    fprintf(stderr,"tree: Invalid argument `%s'.\n",argv[i]);
 	    usage(1);
 	    exit(1);
@@ -586,7 +614,7 @@ void usage(int n)
 	"\t[--matchdirs] [--metafirst] [--ignore-case] [--nolinks] [--inodes]\n"
 	"\t[--device] [--sort[=]<name>] [--dirsfirst] [--filesfirst]\n"
 	"\t[--filelimit #] [--si] [--du] [--prune] [--charset X]\n"
-	"\t[--timefmt[=]format] [--fromfile] [--noreport] [--version] [--help]\n"
+	"\t[--timefmt[=]format] [--fromfile] [--noreport] [--simple-html] [----footer M] [--version] [--help]\n"
 	"\t[--] [directory ...]\n");
 
   if (n < 2) return;
@@ -645,6 +673,12 @@ void usage(int n)
 	"  -J            Prints out an JSON representation of the tree.\n"
 	"  -H baseHREF   Prints out HTML format with baseHREF as top directory.\n"
 	"  -T string     Replace the default HTML title and H1 header with string.\n"
+	"  --print-info-side    \n"
+	"                Prints out information about a file right next to it in HTML output.\n"
+	"  --print-info-tooltips    \n"
+	"                Prints out information about a file as mouse over tooltips in HTML output."
+	"  --simple-html Prints only HTML body.\n"
+	"  --footer M    Prints out the message M before the copyright information in HTML output.\n"
 	"  --nolinks     Turn off hyperlinks in HTML output.\n"
 	"  ------- Input options -------\n"
 	"  --fromfile    Reads paths from files (.=stdin)\n"

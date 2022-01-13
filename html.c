@@ -20,9 +20,9 @@
 
 extern char *version, *hversion;
 extern bool dflag, lflag, pflag, sflag, Fflag, aflag, fflag, uflag, gflag;
-extern bool Dflag, inodeflag, devflag, Rflag, duflag, hflag, siflag;
+extern bool Dflag, inodeflag, devflag, Rflag, duflag, hflag, siflag, shflag, cftflag;
 extern bool noindent, force_color, xdev, nolinks, flimit, metafirst, noreport;
-extern char *host, *sp, *title;
+extern char *host, *sp, *title, *custom_footer;
 extern const char *charset;
 
 extern FILE *outfile;
@@ -31,6 +31,8 @@ extern int Level, *dirs, maxdirs;
 extern bool colorize, linktargetcolor;
 extern char *endcode;
 extern const struct linedraw *linedraw;
+
+extern bool sideinfo, tooltipsinfo;
 
 char *class(struct _info *info)
 {
@@ -95,7 +97,7 @@ void url_encode(FILE *fd, char *s)
 
 void html_intro(void)
 {
-  fprintf(outfile,
+  if (!shflag) fprintf(outfile,
 	"<!DOCTYPE html>\n"
 	"<html>\n"
 	"<head>\n"
@@ -127,12 +129,18 @@ void html_intro(void)
 
 void html_outtro(void)
 {
-  fprintf(outfile,"\t<hr>\n");
-  fprintf(outfile,"\t<p class=\"VERSION\">\n");
+  fprintf(outfile,"<hr>\n"); 
+  fprintf(outfile,"<p class=\"VERSION\">\n");
+  if (cftflag) {
+    fprintf(outfile,"%s\n",custom_footer);
+    fprintf(outfile,"<br><br>\n");
+  }
   fprintf(outfile,hversion,linedraw->copy, linedraw->copy, linedraw->copy, linedraw->copy);
-  fprintf(outfile,"\t</p>\n");
-  fprintf(outfile,"</body>\n");
-  fprintf(outfile,"</html>\n");
+  fprintf(outfile,"</p>\n");
+  if (!shflag) {
+    fprintf(outfile,"</body>\n");
+    fprintf(outfile,"</html>\n");
+  }
 }
 
 void html_print(char *s)
@@ -173,7 +181,7 @@ int html_printfile(char *dirname, char *filename, struct _info *file, int descen
   fprintf(outfile,"<a");
   if (file) {
     if (force_color) fprintf(outfile," class=\"%s\"", class(file));
-    if (file->comment) {
+    if (file->comment && tooltipsinfo) {
       fprintf(outfile," title=\"");
       for(int i=0; file->comment[i]; i++) {
 	html_encode(outfile, file->comment[i]);
@@ -187,7 +195,8 @@ int html_printfile(char *dirname, char *filename, struct _info *file, int descen
       if (dirname != NULL) url_encode(outfile, dirname+1);
       putc('/',outfile);
       url_encode(outfile, filename);
-      fprintf(outfile,"%s%s\"",(descend? "/00Tree.html" : ""), (file->isdir?"/":""));
+/*      fprintf(outfile,"%s%s\"",(descend? "/00Tree.html" : ""), (file->isdir?"/":""));*/
+      fprintf(outfile,"%s\"", (file->isdir?"/":""));
     }
   }
   fprintf(outfile, ">");
@@ -195,6 +204,16 @@ int html_printfile(char *dirname, char *filename, struct _info *file, int descen
   html_encode(outfile,filename);
 
   fprintf(outfile,"</a>");
+  
+  if (file->comment && sideinfo) {
+    for(int i=0; file->comment[i]; i++) {
+      fprintf(outfile, "&nbsp;&nbsp;<span style=\"font-family: monospace;\">");
+	  html_encode(outfile, file->comment[i]);
+	  if (file->comment[i+1]) fprintf(outfile, "\n");
+	  fprintf(outfile, "</span>");
+  	}
+  }
+    
   return 0;
 }
 
